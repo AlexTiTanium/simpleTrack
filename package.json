@@ -1,19 +1,21 @@
 {
-  "name": "simple-track",
-  "version": "0.0.1",
-  "description": "hello world test app",
-  "private": true,
-  "scripts": {
-    "start": "node server.js"
-  },
-  "dependencies": {
-    "express": "3.4.x",
-    "stylus": "0.38.x",
-    "jade": "0.35.x"
-  },
-  "engines": {
-    "node": "0.10.x"
-  },
-  "devDependencies": {},
-  "optionalDependencies": {}
+    "name": "simpleTrack",
+    "private": true,
+    "version": "0.0.0",
+    "description": "a Sails application",
+    "dependencies": {
+        "sails": "0.9.4",
+        "grunt": "0.4.1",
+        "sails-disk": "~0.9.0",
+        "jade": "0.35.0",
+        "optimist": "0.3.4"
+    },
+    "scripts": {
+        "start": "node app.js",
+        "debug": "node debug app.js"
+    },
+    "main": "app.js",
+    "repository": "",
+    "author": "",
+    "license": ""
 }
