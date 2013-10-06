@@ -1,10 +1,7 @@
 extends ../layout
 
 block body
-    div
-        h2 Simple track
-        ul
-            li
-                a(href='/') Home
-            li
-                a(href='/addPost') Add task
+
+  #loading-mask
+    div.ui.active.dimmer
+      div.ui.medium.text.loader #{__('loading')}

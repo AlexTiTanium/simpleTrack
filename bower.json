@@ -1,0 +1,32 @@
+{
+  "name": "simpleTrack",
+  "version": "0.0.1",
+  "private": true,
+  "ignore": [
+    ".jshintrc", "**/*.txt"
+  ],
+  "dependencies": {
+    "jquery": "~2.0.3",
+    "backbone": "1.x.x",
+    "underscore": "~1.5.2",
+    "semantic": "0.3.1",
+    "requirejs": "~2.1.8"
+  },
+  "exportsOverride": {
+
+    "semantic":{
+      "css": "build/packaged/css/semantic.css",
+      "fonts": "build/packaged/fonts/*.*",
+      "images": "build/packaged/images/*.gif"
+    },
+
+    "requirejs":{
+      "js": "require.js"
+    },
+
+    "*":{}
+  },
+  "devDependencies": {
+
+  }
+}
