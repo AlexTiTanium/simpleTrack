@@ -4,7 +4,6 @@
 define(['Backbone'], function (backbone){
 
   var initialize = function (){
-    console.log('start');
     $("#loading-mask").remove();
   };
 

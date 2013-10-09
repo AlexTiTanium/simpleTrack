@@ -10,12 +10,16 @@
     "backbone": "1.x.x",
     "underscore": "~1.5.2",
     "semantic": "0.3.1",
-    "requirejs": "~2.1.8"
+    "requirejs": "~2.1.8",
+    "marionette": "~1.1.0",
+    "backbone.wreqr": "~0.2.0",
+    "handlebars": "~1.0.0",
+    "backbone.marionette.handlebars": "~0.2.0"
   },
   "exportsOverride": {
 
     "semantic":{
-      "css": "build/packaged/css/semantic.css",
+      "build": "build/packaged/css/semantic.css",
       "fonts": "build/packaged/fonts/*.*",
       "images": "build/packaged/images/*.gif"
     },

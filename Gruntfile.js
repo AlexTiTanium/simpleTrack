@@ -18,6 +18,9 @@ module.exports = function (grunt) {
 
   var path = require('path');
 
+  var PUBLIC_PATH = '.tmp/public';
+  var ASSETS_PATH = 'assets';
+
   /**
    * CSS files to inject in order
    * (uses Grunt-style wildcard/glob/splat expressions)
@@ -29,9 +32,8 @@ module.exports = function (grunt) {
    */
 
   var cssFilesToInject = [
-    'css/**/*.css'
+    'css/buildCss.css'
   ];
-
 
   /**
    * Javascript files to inject in order
@@ -46,12 +48,15 @@ module.exports = function (grunt) {
     // Below, as a demonstration, you'll see the built-in dependencies 
     // linked in the proper order order
 
+    // First must loaded require js lib
     'js/require.js',
 
-    // All of the rest of your app scripts imported here
-    'js/build.js'
-  ];
+    // Than all vendor libs
+    'js/requireJsBuild.js',
 
+    // Than at the and our application files
+    'js/applicationBuild.js'
+  ];
 
   /**
    * Client-side HTML templates are injected using the sources below
@@ -64,50 +69,26 @@ module.exports = function (grunt) {
    */
 
   var templateFilesToInject = [
-    'linker/**/*.html'
+    //'linker/**/*.html'
   ];
 
-
-
-  /////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////
-  //
-  // DANGER:
-  //
-  // With great power comes great responsibility.
-  //
-  /////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////
+  /** ///////////////////////////////////////////////////////////////
+  * DANGER:
+  * With great power comes great responsibility.
+  ///////////////////////////////////////////////////////////////// */
 
   // Modify css file injection paths to use 
   cssFilesToInject = cssFilesToInject.map(function (path) {
-    return '.tmp/public/' + path;
+    return PUBLIC_PATH + '/' + path;
   });
 
   // Modify js file injection paths to use 
   jsFilesToInject = jsFilesToInject.map(function (path) {
-    return '.tmp/public/' + path;
+    return PUBLIC_PATH + '/' + path;
   });
 
-
   templateFilesToInject = templateFilesToInject.map(function (path) {
-    return 'assets/' + path;
+    return ASSETS_PATH + '/' + path;
   });
 
 
@@ -126,8 +107,11 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-handlebars');
   grunt.loadNpmTasks('grunt-contrib-requirejs');
   grunt.loadNpmTasks('assemble-less');
+  grunt.loadNpmTasks('grunt-contrib-handlebars');
 
-  // Project configuration.
+  /*******************************************
+  * Project configuration.
+  *******************************************/
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
 
@@ -135,7 +119,7 @@ module.exports = function (grunt) {
     bower: {
       install: {
         options: {
-          targetDir: '.tmp/public/',
+          targetDir: PUBLIC_PATH,
           layout: function(type, component) {
             return path.join(type);
           },
@@ -151,85 +135,94 @@ module.exports = function (grunt) {
       compile: {
         options: {
           include: 'js/boot.js',
-          baseUrl: "assets/",
-          mainConfigFile: "assets/js/boot.js",
+          baseUrl: ASSETS_PATH,
+          mainConfigFile: ASSETS_PATH + "/js/boot.js",
           optimize: 'none',
           generateSourceMaps: true,
-          out: ".tmp/public/js/build.js"
+          out: PUBLIC_PATH + "/js/requireJsBuild.js"
         }
       }
     },
 
     less: {
-      development: {
+      compile: {
         options: {
           concat: false
         },
-        src:  'assets/styles/**/*.less',
-        dest: '.tmp/public/css/lessBuild.css'
+        src:  ASSETS_PATH + '/styles/**/*.less',
+        dest: PUBLIC_PATH + '/css/lessBuild.css'
+      }
+    },
+
+    handlebars: {
+      compile: {
+        options: {
+          processName: function(filePath) {
+            return filePath.replace(ASSETS_PATH + '/js/application/templates/', '');
+          },
+          namespace: 'tpl',
+          amd: true
+        },
+        src:  ASSETS_PATH + '/js/application/templates/**/*.hbs',
+        dest: PUBLIC_PATH + '/js/templatesBuild.js'
       }
     },
 
     copy: {
-      dev: {
-        files: [
-          {
-            expand: true,
-            cwd: './assets/js',
-            src: ['**/*.*'],
-            dest: '.tmp/public/js'
-          },
-          {
-            expand: true,
-            cwd: './assets/images',
-            src: ['**/*.*'],
-            dest: '.tmp/public/images'
-          }
-        ]
+      images:{
+        src: [ASSETS_PATH + '/images/**/*.(png|jpeg|gif)'],
+        dest: PUBLIC_PATH + '/images/'
       }
     },
 
     clean: {
-      dev: ['.tmp/public/**']
+      public: [PUBLIC_PATH + '/**']
     },
 
     concat: {
+      devCss: {
+        src: [PUBLIC_PATH + '/build/**/*.css'],
+        dest: PUBLIC_PATH + '/css/build.css'
+      },
+      devJs: {
+        src: [ASSETS_PATH +'/application/**/*.js', ASSETS_PATH +'/lib/**/*.js'],
+        dest: PUBLIC_PATH + '/js/applicationBuild.js'
+      },
       js: {
         src: jsFilesToInject,
-        dest: '.tmp/public/concat/production.js'
+        dest: PUBLIC_PATH + '/concat/production.js'
       },
       css: {
         src: cssFilesToInject,
-        dest: '.tmp/public/concat/production.css'
+        dest: PUBLIC_PATH + '/concat/production.css'
       }
     },
 
     uglify: {
       dist: {
-        src: ['.tmp/public/concat/production.js'],
-        dest: '.tmp/public/min/production.js'
+        src: [PUBLIC_PATH + '/concat/production.js'],
+        dest: PUBLIC_PATH + '/min/production.js'
       }
     },
 
     cssmin: {
       dist: {
-        src: ['.tmp/public/concat/production.css'],
-        dest: '.tmp/public/min/production.css'
+        src: [PUBLIC_PATH + '/concat/production.css'],
+        dest: PUBLIC_PATH + '/min/production.css'
       }
     },
 
+    /*******************************************
+    * Jade linkers
+    *******************************************/
     'sails-linker': {
-
-      /*******************************************
-       * Jade linkers (TODO: clean this up)
-       *******************************************/
 
       devJsJADE: {
         options: {
           startTag: '// SCRIPTS',
           endTag: '// SCRIPTS END',
           fileTmpl: 'script(type="text/javascript", src="%s")',
-          appRoot: '.tmp/public'
+          appRoot: PUBLIC_PATH
         },
         files: {
           'views/**/*.jade': jsFilesToInject
@@ -241,10 +234,10 @@ module.exports = function (grunt) {
           startTag: '// SCRIPTS',
           endTag: '// SCRIPTS END',
           fileTmpl: 'script(type="text/javascript", src="%s")',
-          appRoot: '.tmp/public'
+          appRoot: PUBLIC_PATH
         },
         files: {
-          'views/**/*.jade': ['.tmp/public/min/production.js']
+          'views/**/*.jade': [PUBLIC_PATH + '/min/production.js']
         }
       },
 
@@ -253,7 +246,7 @@ module.exports = function (grunt) {
           startTag: '// STYLES',
           endTag: '// STYLES END',
           fileTmpl: 'link(rel="stylesheet", href="%s")',
-          appRoot: '.tmp/public'
+          appRoot: PUBLIC_PATH
         },
         files: {
           'views/**/*.jade': cssFilesToInject
@@ -265,34 +258,57 @@ module.exports = function (grunt) {
           startTag: '// STYLES',
           endTag: '// STYLES END',
           fileTmpl: 'link(rel="stylesheet", href="%s")',
-          appRoot: '.tmp/public'
+          appRoot: PUBLIC_PATH
         },
         files: {
-          'views/**/*.jade': ['.tmp/public/min/production.css']
+          'views/**/*.jade': [PUBLIC_PATH + '/min/production.css']
         }
       }
 
-      /************************************
-       * Jade linker end
-       ************************************/
+
     },
+    /************************************
+    * Jade linker end
+    ************************************/
 
+    /************************************
+    * Watch start
+    ************************************/
     watch: {
-      api: {
-
-        // API files to watch:
-        files: ['api/**/*']
-      },
-      assets: {
-
+      js: {
         // Assets to watch:
-        files: ['assets/**/*'],
+        files: ['assets/js/application/**/*.js', 'assets/js/libs/**/*.js'],
 
         // When assets are changed:
-        tasks: ['compileAssets', 'linkAssets']
+        tasks: ['concat:devJs']
+      },
+      images: {
+        // Assets to watch:
+        files: ['assets/images/**/*.(gif|png|jpeg)'],
+
+        // When assets are changed:
+        tasks: ['copy:images']
+      },
+      less: {
+        // Assets to watch:
+        files: ['assets/styles/**/*.less'],
+
+        // When assets are changed:
+        tasks: ['less:compile']
+      },
+      hbs: {
+        // Assets to watch:
+        files: ['assets/application/templates/**/*.hbs'],
+
+        // When assets are changed:
+        tasks: ['handlebars:compile']
       }
     }
   });
+
+  /************************************
+  * Register tasks
+  ************************************/
 
   // When Sails is lifted:
   grunt.registerTask('default', [
@@ -301,41 +317,34 @@ module.exports = function (grunt) {
     'watch'
   ]);
 
+  // This work must do only when grunt start
   grunt.registerTask('compileAssets', [
-    'clean:dev',
+    'clean:public',
     'bower:install',
     'requirejs:compile',
-    'less:development',
-    'copy:dev'
+    'less:compile',
+    'handlebars:compile',
+    'concat:devJs',
+    'concat:devCss',
+    'copy:images'
   ]);
 
+  // Set links to jade template, only on start
   grunt.registerTask('linkAssets', [
-
     // Update link/script/template references in `assets` index.html
     'sails-linker:devJsJADE',
     'sails-linker:devStylesJADE'
   ]);
 
-
-  // Build the assets into a web accessible folder.
-  // (handy for phone gap apps, chrome extensions, etc.)
-  grunt.registerTask('build', [
-    'compileAssets',
-    'linkAssets',
-    'clean:build',
-    'copy:build'
-  ]);
-
   // When sails is lifted in production
   grunt.registerTask('prod', [
-    'clean:dev',
+    'clean:public',
     'compileAssets',
-    'copy:dev',
-    'concat',
+    'concat:js',
+    'concat:css',
     'uglify',
     'cssmin',
     'sails-linker:prodJsJADE',
     'sails-linker:prodStylesJADE'
   ]);
-
 };
